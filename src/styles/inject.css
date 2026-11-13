@@ -1,0 +1,38 @@
+/* Base manifest-loaded styles for <vsc-controller> host element */
+vsc-controller {
+  position: absolute;
+  top: 0;
+  left: 0;
+  visibility: visible;
+  opacity: 1;
+  display: block;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: visible !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  white-space: normal;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* YouTube 3D spherical control offset */
+.ytp-webgl-spherical-control {
+  top: 60px !important;
+}
+
+.ytp-fullscreen .ytp-webgl-spherical-control {
+  top: 100px !important;
+}
+
+/* Disable Vimeo transparent overlay intercept */
+div.video-wrapper + div.target {
+  height: 0;
+}
+
+/* Fix black overlay on Kickstarter */
+div.video-player.has_played.vertically_center:before,
+div.legacy-video-player.has_played.vertically_center:before {
+  content: none !important;
+}
+

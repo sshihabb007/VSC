@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Video Speed Controller</title>
+    <link rel="icon" type="image/png" href="../../assets/icons/icon48.png" />
+    <link rel="stylesheet" href="popup.css" />
+    <script src="popup.js"></script>
+  </head>
+  <body>
+    <div class="popup-container">
+      <div class="live-bar">
+        <span class="live-brand">
+          <img src="../../assets/icons/icon48.png" alt="Video Speed Controller" class="brand-icon" />
+          <span>Speed Controller</span>
+        </span>
+        <span id="live-speed" class="live-badge" title="Current active media speed">--</span>
+      </div>
+
+      <div class="speed-section">
+        <div class="speed-controls">
+          <button id="speed-decrease" class="control-btn" data-delta="-0.1" type="button">
+            <span>-0.1</span>
+          </button>
+          <button id="speed-reset" class="control-btn reset-btn" type="button">1.6</button>
+          <button id="speed-increase" class="control-btn" data-delta="0.1" type="button">
+            <span>+0.1</span>
+          </button>
+        </div>
+
+        <div class="speed-presets">
+          <div class="preset-grid">
+            <button class="preset-btn" data-speed="0.5" type="button">0.5x</button>
+            <button class="preset-btn" data-speed="0.75" type="button">0.75x</button>
+            <button class="preset-btn" data-speed="1.0" type="button">1x</button>
+            <button class="preset-btn" data-speed="1.25" type="button">1.25x</button>
+            <button class="preset-btn" data-speed="1.5" type="button">1.5x</button>
+            <button class="preset-btn" data-speed="1.75" type="button">1.75x</button>
+            <button class="preset-btn" data-speed="2.0" type="button">2x</button>
+            <button class="preset-btn" data-speed="2.5" type="button">2.5x</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="position-section">
+        <div class="position-header">
+          <span class="position-title">Position</span>
+          <select id="pos-scope-select" class="pos-scope-select" title="Choose site or platform to position"></select>
+          <button id="pos-open-studio" class="pos-studio-btn" type="button" title="Open Full Positioning Studio">Studio</button>
+        </div>
+        <div class="position-controls-row">
+          <div class="mini-anchor-grid" role="group" aria-label="Anchor position">
+            <button type="button" class="mini-pos-btn" data-anchor="top-left" title="Top-Left">↖</button>
+            <button type="button" class="mini-pos-btn" data-anchor="top" title="Top">↑</button>
+            <button type="button" class="mini-pos-btn" data-anchor="top-right" title="Top-Right">↗</button>
+            <button type="button" class="mini-pos-btn" data-anchor="left" title="Left">←</button>
+            <button type="button" id="popup-pos-reset" class="mini-pos-btn mini-reset" title="Reset current site offsets">0</button>
+            <button type="button" class="mini-pos-btn" data-anchor="right" title="Right">→</button>
+            <button type="button" class="mini-pos-btn" data-anchor="bottom-left" title="Bottom-Left">↙</button>
+            <button type="button" class="mini-pos-btn" data-anchor="bottom" title="Bottom">↓</button>
+            <button type="button" class="mini-pos-btn" data-anchor="bottom-right" title="Bottom-Right">↘</button>
+          </div>
+          <div class="mini-nudge-col">
+            <div class="mini-nudge-grid" role="group" aria-label="Move position">
+              <span></span>
+              <button type="button" class="mini-nudge-btn" data-nudge="up" title="Move Up (10px)">▲</button>
+              <span></span>
+              <button type="button" class="mini-nudge-btn" data-nudge="left" title="Move Left (10px)">◀</button>
+              <button type="button" class="mini-nudge-btn" data-nudge="down" title="Move Down (10px)">▼</button>
+              <button type="button" class="mini-nudge-btn" data-nudge="right" title="Move Right (10px)">▶</button>
+            </div>
+            <div id="popup-pos-readout" class="popup-pos-readout">Top Left · 0,0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="footer-content">
+          <div id="status" class="status hide"></div>
+          <div class="footer-controls">
+            <button id="toggle-overlay" class="icon-btn" title="Show/Hide On-Page Controller" type="button">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="M12 5c-5.5 0-9.8 3.7-11 7 1.2 3.3 5.5 7 11 7s9.8-3.7 11-7c-1.2-3.3-5.5-7-11-7zm0 11.5A4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 0 1 0 9zm0-7A2.5 2.5 0 1 0 12 14.5 2.5 2.5 0 0 0 12 9.5z"
+                />
+              </svg>
+            </button>
+            <button id="disable" class="icon-btn power-btn" title="Toggle Extension" type="button">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="M12 2a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-3 0v-7A1.5 1.5 0 0 1 12 2zm0 20c-5.522 0-10-4.477-10-10 0-4.26 2.668-7.9 6.43-9.33a1 1 0 0 1 .71 1.87A8.002 8.002 0 0 0 12 20a8.002 8.002 0 0 0 2.86-15.46 1 1 0 0 1 .71-1.87C19.332 4.1 22 7.74 22 12c0 5.523-4.478 10-10 10z"
+                />
+              </svg>
+            </button>
+            <button id="config" class="icon-btn settings-btn" title="Settings" type="button">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

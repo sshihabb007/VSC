@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "name": "Video Speed Controller",
+  "short_name": "SpeedCtrl",
+  "version": "1.0.0",
+  "description": "Accelerate, slow down, advance, rewind, and bookmark any HTML5 video or audio with lightweight precision.",
+  "author": "Mehedi Hasan Shihab",
+  "homepage_url": "https://sshihabb007.github.io/",
+  "minimum_chrome_version": "111",
+  "permissions": ["storage"],
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "32": "assets/icons/icon32.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_ui": {
+    "page": "ui/options/options.html",
+    "open_in_tab": true
+  },
+  "action": {
+    "default_icon": {
+      "19": "assets/icons/icon19.png",
+      "38": "assets/icons/icon38.png",
+      "48": "assets/icons/icon48.png"
+    },
+    "default_popup": "ui/popup/popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "exclude_matches": ["https://hangouts.google.com/*", "https://meet.google.com/*"],
+      "all_frames": true,
+      "match_about_blank": true,
+      "js": ["content-bridge.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "exclude_matches": ["https://hangouts.google.com/*", "https://meet.google.com/*"],
+      "all_frames": true,
+      "match_about_blank": true,
+      "world": "MAIN",
+      "css": ["styles/inject.css"],
+      "js": ["inject.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.netflix.com/*"],
+      "all_frames": false,
+      "world": "MAIN",
+      "js": ["netflix-seek.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
+

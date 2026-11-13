@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Video Speed Controller: Options</title>
+    <link rel="icon" type="image/png" href="../../assets/icons/icon48.png" />
+    <link rel="stylesheet" href="options.css" />
+    <script src="options.js"></script>
+  </head>
+
+  <body>
+    <header>
+      <nav class="header-tabs">
+        <img src="../../assets/icons/icon48.png" alt="Video Speed Controller logo" class="header-icon" />
+        <button id="tab-settings" class="header-tab active" type="button">Settings</button>
+        <button id="tab-advanced" class="header-tab" type="button">Advanced</button>
+        <button id="tab-about" class="header-tab" type="button">About</button>
+      </nav>
+      <div class="split-button">
+        <button id="save" class="split-primary" type="button">Save</button>
+        <button id="split-toggle" class="split-arrow" aria-label="More actions" type="button">
+          &#9662;
+        </button>
+        <div id="split-menu" class="split-dropdown" hidden>
+          <button id="import" type="button">Import</button>
+          <button id="export" type="button">Export</button>
+          <button id="restore" type="button">Reset</button>
+        </div>
+        <input type="file" id="importFile" accept=".json" hidden />
+      </div>
+    </header>
+
+    <main>
+      <div id="status" role="status" aria-live="polite"></div>
+
+      <!-- SETTINGS TAB -->
+      <div id="panel-settings">
+        <section id="customs">
+          <h3>Shortcuts</h3>
+          <div id="shortcuts-container"></div>
+          <button id="add" class="secondary" type="button">Add New</button>
+        </section>
+
+        <section>
+          <h3>Preferences</h3>
+          <div class="row">
+            <label for="audioBoolean">
+              Audio support<br />
+              <em>Show speed controls on HTML5 audio elements.</em>
+            </label>
+            <input id="audioBoolean" type="checkbox" />
+          </div>
+          <div class="row">
+            <label for="rememberSpeed">
+              Remember playback speed<br />
+              <em>Store and auto-apply the last used speed to all new media.</em>
+            </label>
+            <input id="rememberSpeed" type="checkbox" />
+          </div>
+          <div class="row">
+            <label for="startHidden">
+              Hide controller by default<br />
+              <em>Controller stays hidden until toggled via shortcut.</em>
+            </label>
+            <input id="startHidden" type="checkbox" />
+          </div>
+          <div class="row">
+            <label for="exclusiveKeys">
+              Exclusive keyboard shortcuts<br />
+              <em>Prevent websites from also handling VSC shortcut keys.</em>
+            </label>
+            <input id="exclusiveKeys" type="checkbox" />
+          </div>
+        </section>
+      </div>
+
+      <!-- ADVANCED TAB -->
+      <div id="panel-advanced" style="display: none">
+        <section>
+          <h3>Appearance &amp; Diagnostics</h3>
+          <div class="row">
+            <label for="controllerOpacity">
+              Controller opacity<br />
+              <em>0 = fully transparent, 1 = fully opaque. Default: 0.3</em>
+            </label>
+            <input id="controllerOpacity" type="text" value="" />
+          </div>
+          <div class="row">
+            <label for="controllerButtonSize">
+              Controller button size<br />
+              <em>Font size in pixels for the speed display and buttons. Default: 14</em>
+            </label>
+            <input id="controllerButtonSize" type="text" value="" />
+          </div>
+          <div class="row">
+            <label for="logLevel">
+              Console Log Level<br />
+              <em>Set verbosity in the browser developer console</em>
+            </label>
+            <select id="logLevel">
+              <option value="1">None</option>
+              <option value="2">Error</option>
+              <option value="3">Warning</option>
+              <option value="4">Info</option>
+              <option value="5">Debug</option>
+              <option value="6">Verbose</option>
+            </select>
+          </div>
+        </section>
+
+        <section>
+          <h3>Site Rules</h3>
+          <div class="row stack">
+            <label>
+              <em>Per-site overrides. Use a domain or regex (e.g. <code>/\.edu$/i</code>). Check Disable to turn off the extension, or set a default speed (0.07 - 16).</em>
+            </label>
+            <div id="site-rules-container">
+              <div class="site-rules-header">
+                <span>Pattern</span>
+                <span>Disable</span>
+                <span>Speed</span>
+                <span></span>
+              </div>
+            </div>
+            <button id="add-site-rule" class="secondary" type="button">Add Site Rule</button>
+            <div id="siteRulesValidation" class="css-validation"></div>
+          </div>
+        </section>
+
+        <section id="controller-positioning">
+          <div class="pos-header-row">
+            <div>
+              <h3>Controller Positioning</h3>
+              <p class="pos-subtitle">
+                Choose independent corners, edges, or directional pixel offsets for each platform or custom site.
+              </p>
+            </div>
+            <button type="button" id="pos-reset-current" class="pos-reset-btn">
+              Reset Current Site
+            </button>
+          </div>
+
+          <div class="pos-platforms-block">
+            <div id="pos-platform-tabs" class="pos-platform-tabs" role="tablist" aria-label="Platform &amp; Site Positions"></div>
+            <div class="pos-add-site-row">
+              <input
+                type="text"
+                id="pos-site-pattern"
+                placeholder="Add custom domain or /regex/ (e.g. twitch.tv, vimeo.com)"
+                spellcheck="false"
+                autocomplete="off"
+              />
+              <button type="button" id="pos-add-site" class="secondary">+ Add Site</button>
+            </div>
+            <div id="pos-site-error" class="pos-site-error" hidden></div>
+            <div id="pos-scope-summary" class="pos-scope-summary"></div>
+          </div>
+
+          <div class="pos-studio-grid">
+            <div class="pos-preview-col">
+              <div id="pos-preview-stage" class="pos-preview-stage">
+                <div class="pos-stage-watermark" aria-hidden="true">▶</div>
+                <div class="pos-stage-scrub" aria-hidden="true"></div>
+                <div id="pos-preview-badge" class="pos-preview-badge">
+                  <span class="pos-preview-speed">1.00</span>
+                  <span class="pos-preview-controls">« − + »</span>
+                </div>
+                <button type="button" class="pos-hotspot" data-anchor="top-left" title="Anchor Top-Left" aria-label="Anchor Top-Left"></button>
+                <button type="button" class="pos-hotspot" data-anchor="top" title="Anchor Top" aria-label="Anchor Top"></button>
+                <button type="button" class="pos-hotspot" data-anchor="top-right" title="Anchor Top-Right" aria-label="Anchor Top-Right"></button>
+                <button type="button" class="pos-hotspot" data-anchor="left" title="Anchor Left" aria-label="Anchor Left"></button>
+                <button type="button" class="pos-hotspot" data-anchor="right" title="Anchor Right" aria-label="Anchor Right"></button>
+                <button type="button" class="pos-hotspot" data-anchor="bottom-left" title="Anchor Bottom-Left" aria-label="Anchor Bottom-Left"></button>
+                <button type="button" class="pos-hotspot" data-anchor="bottom" title="Anchor Bottom" aria-label="Anchor Bottom"></button>
+                <button type="button" class="pos-hotspot" data-anchor="bottom-right" title="Anchor Bottom-Right" aria-label="Anchor Bottom-Right"></button>
+              </div>
+              <div id="pos-readout" class="pos-readout">Top Left · X: 0px · Y: 0px</div>
+            </div>
+
+            <div class="pos-controls-col">
+              <div class="pos-control-group">
+                <div class="pos-group-label">Anchor To Corner or Edge</div>
+                <div class="pos-anchor-matrix">
+                  <button type="button" class="pos-anchor-btn" data-anchor="top-left">↖ Top-Left</button>
+                  <button type="button" class="pos-anchor-btn" data-anchor="top">↑ Top</button>
+                  <button type="button" class="pos-anchor-btn" data-anchor="top-right">↗ Top-Right</button>
+                  <button type="button" class="pos-anchor-btn" data-anchor="left">← Left</button>
+                  <button type="button" id="pos-reset-offsets" class="pos-anchor-center-btn" title="Zero X/Y offsets">0, 0</button>
+                  <button type="button" class="pos-anchor-btn" data-anchor="right">→ Right</button>
+                  <button type="button" class="pos-anchor-btn" data-anchor="bottom-left">↙ Bottom-Left</button>
+                  <button type="button" class="pos-anchor-btn" data-anchor="bottom">↓ Bottom</button>
+                  <button type="button" class="pos-anchor-btn" data-anchor="bottom-right">↘ Bottom-Right</button>
+                </div>
+              </div>
+
+              <div class="pos-control-group">
+                <div class="pos-nudge-header">
+                  <span class="pos-group-label">Move / Nudge</span>
+                  <div class="pos-step-group" role="group" aria-label="Nudge Step Size">
+                    <button type="button" class="pos-step-btn" data-step="1">1px</button>
+                    <button type="button" class="pos-step-btn" data-step="5">5px</button>
+                    <button type="button" class="pos-step-btn active" data-step="10">10px</button>
+                    <button type="button" class="pos-step-btn" data-step="25">25px</button>
+                  </div>
+                </div>
+                <div class="pos-nudge-dpad">
+                  <button type="button" class="pos-nudge-btn up" data-nudge="up" title="Move Up">▲ Up</button>
+                  <button type="button" class="pos-nudge-btn left" data-nudge="left" title="Move Left">◀ Left</button>
+                  <button type="button" class="pos-nudge-btn right" data-nudge="right" title="Move Right">Right ▶</button>
+                  <button type="button" class="pos-nudge-btn down" data-nudge="down" title="Move Down">▼ Down</button>
+                </div>
+                <div class="pos-offset-inputs">
+                  <label class="pos-offset-field">
+                    <span>Offset X (px)</span>
+                    <input type="number" id="pos-offset-x" min="-2000" max="2000" step="1" value="0" />
+                  </label>
+                  <label class="pos-offset-field">
+                    <span>Offset Y (px)</span>
+                    <input type="number" id="pos-offset-y" min="-2000" max="2000" step="1" value="0" />
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ABOUT TAB -->
+      <div id="panel-about" style="display: none">
+        <section class="about-hero">
+          <div class="about-hero-top">
+            <div class="about-brand">
+              <img src="../../assets/logo.png" alt="Video Speed Controller logo" class="about-hero-icon" />
+              <div>
+                <div class="about-title-row">
+                  <h2>Video Speed Controller</h2>
+                  <span id="about-version" class="about-version-pill">v1.0.0</span>
+                </div>
+                <p class="about-tagline">
+                  Lightweight Manifest V3 HTML5 <code>&lt;video&gt;</code> &amp; <code>&lt;audio&gt;</code> speed controller with per-site positioning, custom shortcuts, and zero runtime overhead.
+                </p>
+              </div>
+            </div>
+          </div>
+          <nav class="about-toc" aria-label="About sections">
+            <a href="#about-guide">Usage Guide</a>
+            <a href="#about-shortcuts">Shortcuts</a>
+            <a href="#about-positioning">Positioning Studio</a>
+            <a href="#about-rules">Site Rules &amp; Sync</a>
+            <a href="#about-author">Developer</a>
+            <a href="#about-faq">FAQ</a>
+          </nav>
+        </section>
+
+        <section id="about-guide">
+          <h3>How to Use Video Speed Controller</h3>
+          <div class="about-guide-grid">
+            <article class="guide-card">
+              <h4>1. On-Page Floating Controller</h4>
+              <ul>
+                <li>Plays cleanly on any native HTML5 <code>&lt;video&gt;</code> (and <code>&lt;audio&gt;</code> when enabled), ranging from <code>0.07×</code> to <code>16.00×</code>.</li>
+                <li><strong>Hover</strong> over the speed badge to reveal inline buttons: <code>«</code> Rewind, <code>−</code> Slower, <code>+</code> Faster, and <code>»</code> Advance.</li>
+                <li><strong>Double-click</strong> the speed number to toggle between reset speed (<code>1.0×</code>) and preferred speed (<code>G</code>).</li>
+                <li><strong>Hover &amp; Scroll:</strong> Rest the cursor on the badge for ~0.3s and scroll up/down to step speed by <code>0.1×</code> without scrolling the page.</li>
+                <li><strong>Drag:</strong> Hold and drag the badge to move it anywhere temporarily during playback.</li>
+              </ul>
+            </article>
+
+            <article class="guide-card">
+              <h4>2. Toolbar Extension Popup</h4>
+              <ul>
+                <li>Click the extension icon in your Chrome or Brave toolbar for an instant speed HUD showing active video speed and multi-video count.</li>
+                <li>Use step buttons (<code>-0.1</code> / preferred / <code>+0.1</code>) or one-click speed presets from <code>0.5×</code> to <code>2.5×</code>.</li>
+                <li>Toggle on-page controller visibility with the eye icon or disable the extension globally with the power button.</li>
+                <li>Use the built-in <strong>Position</strong> strip inside the popup to re-anchor or nudge the active website live without opening Settings.</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section id="about-shortcuts">
+          <h3>Keyboard Shortcuts &amp; Custom Actions</h3>
+          <p class="about-section-desc">
+            Customize any key, add modifier chords (<code>Ctrl</code>, <code>Alt</code>, <code>Shift</code>, <code>Meta</code>), or add extra actions like <strong>Pause</strong>, <strong>Mute</strong>, <strong>Increase volume</strong>, and <strong>Decrease volume</strong> under <strong>Settings &gt; Shortcuts</strong>. Typing inside text fields (including Shadow DOM inputs) is automatically ignored.
+          </p>
+          <div class="about-table-wrap">
+            <table class="about-shortcuts-table">
+              <thead>
+                <tr>
+                  <th>Default Key</th>
+                  <th>Action</th>
+                  <th>Default Step / Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><kbd>X</kbd></td>
+                  <td>Decrease playback speed</td>
+                  <td><code>-0.1×</code></td>
+                </tr>
+                <tr>
+                  <td><kbd>C</kbd></td>
+                  <td>Increase playback speed</td>
+                  <td><code>+0.1×</code></td>
+                </tr>
+                <tr>
+                  <td><kbd>S</kbd></td>
+                  <td>Rewind video</td>
+                  <td><code>5s</code></td>
+                </tr>
+                <tr>
+                  <td><kbd>D</kbd></td>
+                  <td>Advance video</td>
+                  <td><code>5s</code></td>
+                </tr>
+                <tr>
+                  <td><kbd>Z</kbd></td>
+                  <td>Reset / toggle previous speed</td>
+                  <td><code>1.0×</code></td>
+                </tr>
+                <tr>
+                  <td><kbd>G</kbd></td>
+                  <td>Toggle preferred fast speed</td>
+                  <td><code>1.6×</code></td>
+                </tr>
+                <tr>
+                  <td><kbd>V</kbd></td>
+                  <td>Show / hide controller overlay</td>
+                  <td>Toggle</td>
+                </tr>
+                <tr>
+                  <td><kbd>M</kbd></td>
+                  <td>Save timestamp marker</td>
+                  <td>Current time</td>
+                </tr>
+                <tr>
+                  <td><kbd>J</kbd></td>
+                  <td>Jump to saved timestamp marker</td>
+                  <td>Saved time</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="about-positioning">
+          <h3>Per-Platform &amp; Site-Wise Positioning</h3>
+          <div class="about-guide-grid">
+            <article class="guide-card">
+              <h4>Independent Platform Rules</h4>
+              <p>
+                Open <strong>Advanced &gt; Controller Positioning</strong> to assign separate placements for <strong>Global Default</strong>, <strong>YouTube</strong>, <strong>Facebook</strong>, <strong>Instagram</strong>, <strong>X (Twitter)</strong>, or any custom domain / <code>/regex/</code> added via <strong>+ Add Site</strong>.
+              </p>
+            </article>
+            <article class="guide-card">
+              <h4>Corners, Edges &amp; Pixel Offsets</h4>
+              <p>
+                Anchor the pill to any corner or edge (<code>Top-Left</code>, <code>Top</code>, <code>Top-Right</code>, <code>Left</code>, <code>Right</code>, <code>Bottom-Left</code>, <code>Bottom</code>, <code>Bottom-Right</code>), fine-tune with directional nudges (<code>1px</code> / <code>5px</code> / <code>10px</code> / <code>25px</code>) or explicit X/Y pixel offsets, preview live on the 16:9 stage, and click <strong>Save</strong> to update open video tabs instantly.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section id="about-rules">
+          <h3>Site Rules, Preferences &amp; Backup</h3>
+          <ul class="about-list">
+            <li><strong>Site Rules (Advanced):</strong> Enter a domain (e.g. <code>example.com</code>) or regex (e.g. <code>/\.edu$/i</code>) to either <strong>Disable</strong> the extension on that site or initialize a custom per-site default speed (<code>0.07</code>–<code>16</code>).</li>
+            <li><strong>Preferences (Settings):</strong> Toggle HTML5 <code>&lt;audio&gt;</code> badge attachment, <strong>Remember playback speed</strong> across videos, start hidden by default, or <strong>Exclusive keyboard shortcuts</strong> to stop site players from reacting to your bound keys.</li>
+            <li><strong>Import, Export &amp; Reset:</strong> Use the arrow menu next to <strong>Save</strong> at the top-right to export your configuration as JSON, restore from backup, or reset all preferences cleanly.</li>
+          </ul>
+        </section>
+
+        <section id="about-author">
+          <h3>Author &amp; Developer</h3>
+          <div class="about-author-card">
+            <div class="about-author-info">
+              <div class="about-author-name">Mehedi Hasan Shihab <span>(@sshihabb007)</span></div>
+              <div class="about-author-role">Software &amp; Systems Engineer</div>
+            </div>
+            <div class="about-author-links">
+              <a href="https://sshihabb007.github.io/" target="_blank" rel="noopener noreferrer">Portfolio</a>
+              <a href="https://github.com/sshihabb007" target="_blank" rel="noopener noreferrer">GitHub</a>
+              <a href="https://www.linkedin.com/in/mehedi-hasan-shihab" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+              <a href="mailto:sshihabb007@gmail.com">Email</a>
+            </div>
+          </div>
+        </section>
+
+        <section id="about-faq">
+          <h3>Frequently Asked Questions</h3>
+          <div id="faq">
+            <ul class="faq-toc">
+              <li><a href="#faq-local">Local files / Incognito</a></li>
+              <li><a href="#faq-disable">Disable on a site</a></li>
+              <li><a href="#faq-site-speed">Default speed per site</a></li>
+              <li><a href="#faq-remember">Remember speed</a></li>
+              <li><a href="#faq-keys">Shortcut conflicts</a></li>
+              <li><a href="#faq-position">Controller positioning</a></li>
+              <li><a href="#faq-missing">Controller not showing</a></li>
+              <li><a href="#faq-spa">Speed resets on navigate</a></li>
+              <li><a href="#faq-audio">Audio support</a></li>
+            </ul>
+            <hr />
+
+            <h4 id="faq-local">Local files (file://) or Incognito mode</h4>
+            <p>
+              Open <code>chrome://extensions</code> (or <code>brave://extensions</code>), open Details on Video Speed Controller, and toggle
+              <strong>Allow access to file URLs</strong> and/or <strong>Allow in Incognito</strong>.
+            </p>
+
+            <h4 id="faq-disable">Disable the extension on a specific site</h4>
+            <p>
+              In <strong>Advanced &gt; Site Rules</strong>, add the domain (e.g. <code>example.com</code>) or a regex pattern (e.g. <code>/\.edu$/i</code>) and check <strong>Disable</strong>.
+            </p>
+
+            <h4 id="faq-site-speed">Set a default speed per site</h4>
+            <p>
+              In <strong>Advanced &gt; Site Rules</strong>, add a rule and enter a numeric speed (e.g. <code>2</code>). Leave <strong>Disable</strong> unchecked.
+            </p>
+
+            <h4 id="faq-remember">Interaction between Remember speed and Site Rules</h4>
+            <p>
+              Matching site-rule default speeds initialize playback rate for that domain, whereas global remembered speed applies across sites when enabled.
+            </p>
+
+            <h4 id="faq-keys">Resolving shortcut conflicts</h4>
+            <p>
+              Bind chords with <code>Shift</code>, <code>Ctrl</code>, or <code>Alt</code>, rebind keys, or turn on <strong>Exclusive keyboard shortcuts</strong> in Settings.
+            </p>
+
+            <h4 id="faq-position">Repositioning the controller</h4>
+            <p>
+              Drag the speed badge directly on any video, use the quick position controls in the extension popup, or set exact corners, edges, and X/Y offsets independently per platform under <strong>Advanced &gt; Controller Positioning</strong>.
+            </p>
+
+            <h4 id="faq-missing">Controller not showing</h4>
+            <p>
+              Check Site Rules (Disable unchecked), verify the player uses native HTML5 <code>&lt;video&gt;</code>/<code>&lt;audio&gt;</code>, or toggle visibility (default: <code>V</code>).
+            </p>
+
+            <h4 id="faq-spa">SPA navigation (YouTube, etc.)</h4>
+            <p>
+              The extension detects SPA route changes automatically and restores session or site-rule playback speeds.
+            </p>
+
+            <h4 id="faq-audio">Audio support</h4>
+            <p>
+              When enabled in Settings, HTML5 <code>&lt;audio&gt;</code> elements receive a persistent floating speed badge.
+            </p>
+          </div>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
+
