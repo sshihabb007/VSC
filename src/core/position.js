@@ -21,28 +21,54 @@ export function createDefaultSitePositions() {
   return BUILTIN_PLATFORM_PRESETS.map((preset) => ({ ...preset }));
 }
 
-export function normalizeAnchor(anchor) {
+export function getDefaultPositionForSite(idOrPattern) {
+  if (idOrPattern && idOrPattern !== '__default__') {
+    const needle = String(idOrPattern).toLowerCase();
+    const preset = BUILTIN_PLATFORM_PRESETS.find(
+      (p) => p.id === idOrPattern || p.pattern.toLowerCase() === needle
+    );
+    if (preset) {
+      return {
+        anchor: preset.anchor,
+        offsetX: preset.offsetX,
+        offsetY: preset.offsetY,
+      };
+    }
+  }
+  return { ...DEFAULT_POSITION };
+}
+
+export function normalizeAnchor(anchor, fallback = DEFAULT_POSITION.anchor) {
   if (typeof anchor === 'string' && Object.hasOwn(POSITION_ANCHORS, anchor)) {
     return anchor;
   }
-  return DEFAULT_POSITION.anchor;
+  return fallback;
 }
 
-export function normalizeOffset(value) {
+export function normalizeOffset(value, fallback = 0) {
+  if (value === undefined || value === null || value === '') {
+    return fallback;
+  }
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) {
-    return 0;
+    return fallback;
   }
   const rounded = Math.round(numeric);
   return Math.max(MIN_POSITION_OFFSET, Math.min(MAX_POSITION_OFFSET, rounded));
 }
 
-export function normalizePosition(position) {
-  const source = position && typeof position === 'object' ? position : {};
+export function normalizePosition(position, fallback = DEFAULT_POSITION) {
+  if (!position || typeof position !== 'object') {
+    return {
+      anchor: fallback.anchor,
+      offsetX: fallback.offsetX,
+      offsetY: fallback.offsetY,
+    };
+  }
   return {
-    anchor: normalizeAnchor(source.anchor),
-    offsetX: normalizeOffset(source.offsetX),
-    offsetY: normalizeOffset(source.offsetY),
+    anchor: normalizeAnchor(position.anchor, fallback.anchor),
+    offsetX: normalizeOffset(position.offsetX, fallback.offsetX),
+    offsetY: normalizeOffset(position.offsetY, fallback.offsetY),
   };
 }
 
@@ -81,10 +107,10 @@ export function normalizeSitePositionEntry(entry, index = 0) {
   const pattern = typeof entry.pattern === 'string' ? entry.pattern.trim() : '';
   if (!pattern) return null;
 
-  const normalizedPos = normalizePosition(entry);
   const builtinMatch = BUILTIN_PLATFORM_PRESETS.find(
     (preset) => preset.id === entry.id || preset.pattern === pattern
   );
+  const normalizedPos = normalizePosition(entry, builtinMatch || DEFAULT_POSITION);
 
   return {
     id:

@@ -89,7 +89,7 @@
           <div class="row">
             <label for="controllerButtonSize">
               Controller button size<br />
-              <em>Font size in pixels for the speed display and buttons. Default: 14</em>
+              <em>Font size in pixels for the speed display and buttons. Default: 8</em>
             </label>
             <input id="controllerButtonSize" type="text" value="" />
           </div>
@@ -175,7 +175,7 @@
                 <button type="button" class="pos-hotspot" data-anchor="bottom" title="Anchor Bottom" aria-label="Anchor Bottom"></button>
                 <button type="button" class="pos-hotspot" data-anchor="bottom-right" title="Anchor Bottom-Right" aria-label="Anchor Bottom-Right"></button>
               </div>
-              <div id="pos-readout" class="pos-readout">Top Left · X: 0px · Y: 0px</div>
+              <div id="pos-readout" class="pos-readout">Top Left · X: 0px · Y: +50px</div>
             </div>
 
             <div class="pos-controls-col">
@@ -217,7 +217,7 @@
                   </label>
                   <label class="pos-offset-field">
                     <span>Offset Y (px)</span>
-                    <input type="number" id="pos-offset-y" min="-2000" max="2000" step="1" value="0" />
+                    <input type="number" id="pos-offset-y" min="-2000" max="2000" step="1" value="50" />
                   </label>
                 </div>
               </div>
@@ -235,7 +235,7 @@
               <div>
                 <div class="about-title-row">
                   <h2>Video Speed Controller</h2>
-                  <span id="about-version" class="about-version-pill">v1.0.1</span>
+                  <span id="about-version" class="about-version-pill">v1.0.2</span>
                 </div>
                 <p class="about-tagline">
                   Lightweight Manifest V3 HTML5 <code>&lt;video&gt;</code> &amp; <code>&lt;audio&gt;</code> speed controller with per-site positioning, custom shortcuts, and zero runtime overhead.

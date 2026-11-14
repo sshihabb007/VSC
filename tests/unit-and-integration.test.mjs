@@ -18,6 +18,8 @@ import {
   DEFAULT_POSITION,
   BUILTIN_PLATFORM_PRESETS,
   computeAnchorCoordinates,
+  getDefaultPositionForSite,
+  normalizePosition,
   resolveSitePosition,
   nudgePosition,
   normalizeSitePatternInput,
@@ -741,14 +743,26 @@ test('resolveSitePosition isolates per-platform rules and nudges safely', () => 
   assert.deepEqual(resolveSitePosition(sitePositions, fallback, 'https://x.com/user/status/1'), {
     anchor: 'top-left',
     offsetX: 0,
-    offsetY: 0,
+    offsetY: 50,
   });
   assert.deepEqual(resolveSitePosition(sitePositions, fallback, 'https://twitter.com/home'), {
     anchor: 'top-left',
     offsetX: 0,
-    offsetY: 0,
+    offsetY: 50,
   });
   assert.deepEqual(resolveSitePosition(sitePositions, fallback, 'https://example.com/?next=x.com'), fallback);
+
+  // Verify default settings & platform presets
+  assert.equal(DEFAULT_SETTINGS.controllerOpacity, 0.3);
+  assert.equal(DEFAULT_SETTINGS.controllerButtonSize, 8);
+  assert.equal(DEFAULT_SETTINGS.logLevel, LOG_LEVELS.WARNING);
+  assert.deepEqual(DEFAULT_POSITION, { anchor: 'top-left', offsetX: 0, offsetY: 50 });
+  assert.deepEqual(normalizePosition(undefined), { anchor: 'top-left', offsetX: 0, offsetY: 50 });
+  assert.deepEqual(getDefaultPositionForSite('__default__'), { anchor: 'top-left', offsetX: 0, offsetY: 50 });
+  assert.deepEqual(getDefaultPositionForSite('youtube'), { anchor: 'top-left', offsetX: 0, offsetY: 50 });
+  assert.deepEqual(getDefaultPositionForSite('facebook'), { anchor: 'top-left', offsetX: 0, offsetY: 60 });
+  assert.deepEqual(getDefaultPositionForSite('instagram'), { anchor: 'top-left', offsetX: 0, offsetY: 50 });
+  assert.deepEqual(getDefaultPositionForSite('x'), { anchor: 'top-left', offsetX: 0, offsetY: 50 });
 
   let nudged = nudgePosition({ anchor: 'bottom-right', offsetX: 0, offsetY: 0 }, 'up', 10);
   nudged = nudgePosition(nudged, 'left', 15);

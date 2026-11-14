@@ -2,6 +2,15 @@
 
 All notable changes to **Video Speed Controller** are documented in this file.
 
+## [1.0.2] - 2026-11-14
+
+### Changed
+- **Refined Out-of-the-Box Default Appearance & Positioning**:
+  - Updated default **Controller button size** from `14px` to compact **`8px`** (`controllerOpacity: 0.3`, `Console Log Level: Warning`, and disabled default site rules for `imgur.com`, `teams.microsoft.com`, and `meet.google.com`).
+  - Updated **Global Default** controller position to **`Top-Left` (`Offset X: 0px`, `Offset Y: +50px`)** so the speed badge clears top player bars and titles cleanly.
+  - Updated built-in platform positioning presets: **YouTube**, **Instagram**, and **X (Twitter)** default to **`Top-Left` (`X: 0px`, `Y: +50px`)**, and **Facebook** defaults to **`Top-Left` (`X: 0px`, `Y: +60px`)**.
+- **Platform-Aware Position Reset & Customization State**: Updated `PositionStudio` (**Reset Current Site** and pill customization dots) and Popup quick position reset (`getDefaultPositionForSite`) to restore each platform's own built-in preset rather than zeroing offsets.
+
 ## [1.0.1] - 2026-11-14
 
 ### Fixed

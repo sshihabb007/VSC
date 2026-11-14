@@ -69,7 +69,7 @@ export const POSITION_ANCHOR_ORDER = Object.freeze([
 export const DEFAULT_POSITION = Object.freeze({
   anchor: 'top-left',
   offsetX: 0,
-  offsetY: 0,
+  offsetY: 50,
 });
 
 export const BUILTIN_PLATFORM_PRESETS = Object.freeze([
@@ -79,7 +79,7 @@ export const BUILTIN_PLATFORM_PRESETS = Object.freeze([
     pattern: 'youtube.com',
     anchor: 'top-left',
     offsetX: 0,
-    offsetY: 0,
+    offsetY: 50,
     builtin: true,
     enabled: true,
   }),
@@ -89,7 +89,7 @@ export const BUILTIN_PLATFORM_PRESETS = Object.freeze([
     pattern: 'facebook.com',
     anchor: 'top-left',
     offsetX: 0,
-    offsetY: 0,
+    offsetY: 60,
     builtin: true,
     enabled: true,
   }),
@@ -99,7 +99,7 @@ export const BUILTIN_PLATFORM_PRESETS = Object.freeze([
     pattern: 'instagram.com',
     anchor: 'top-left',
     offsetX: 0,
-    offsetY: 0,
+    offsetY: 50,
     builtin: true,
     enabled: true,
   }),
@@ -109,7 +109,7 @@ export const BUILTIN_PLATFORM_PRESETS = Object.freeze([
     pattern: '/(^|\\.|\\/\\/)(x|twitter)\\.com(\\/|:|$)/i',
     anchor: 'top-left',
     offsetX: 0,
-    offsetY: 0,
+    offsetY: 50,
     builtin: true,
     enabled: true,
   }),
@@ -124,7 +124,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   audioBoolean: true,
   startHidden: false,
   controllerOpacity: 0.3,
-  controllerButtonSize: 14,
+  controllerButtonSize: 8,
   defaultPosition: DEFAULT_POSITION,
   sitePositions: BUILTIN_PLATFORM_PRESETS,
   keyBindings: Object.freeze(

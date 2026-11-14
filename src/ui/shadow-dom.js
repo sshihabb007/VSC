@@ -44,7 +44,7 @@ const SHADOW_CSS = `
 
 #controller {
   position: absolute;
-  top: var(--vsc-anchor-y, 12px);
+  top: var(--vsc-anchor-y, 62px);
   left: var(--vsc-anchor-x, 12px);
   display: inline-flex;
   align-items: center;
@@ -102,7 +102,7 @@ const SHADOW_CSS = `
   display: none;
   align-items: center;
   gap: 2px;
-  font-size: var(--vsc-font-size, 14px);
+  font-size: var(--vsc-font-size, 8px);
   line-height: 1;
 }
 
@@ -114,7 +114,7 @@ const SHADOW_CSS = `
   min-width: 2.85em;
   height: 1.45em;
   padding: 0 4px;
-  font-size: var(--vsc-font-size, 14px);
+  font-size: var(--vsc-font-size, 8px);
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -200,7 +200,7 @@ export class ShadowDOMManager {
     const {
       speed = '1.00',
       opacity = 0.3,
-      buttonSize = 14,
+      buttonSize = 8,
     } = options;
 
     const shadow = wrapper.attachShadow({ mode: 'open' });

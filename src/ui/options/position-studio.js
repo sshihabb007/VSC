@@ -4,6 +4,7 @@ import {
   DEFAULT_POSITION,
   createDefaultSitePositions,
   ensureBuiltinPlatformPresets,
+  getDefaultPositionForSite,
   normalizePosition,
   normalizeSitePatternInput,
   normalizeSitePositionEntry,
@@ -120,7 +121,8 @@ export class PositionStudio {
     });
 
     this.resetCurrentBtn?.addEventListener('click', () => {
-      this.updateActivePosition({ ...DEFAULT_POSITION });
+      const active = this.getActiveEntry();
+      this.updateActivePosition(getDefaultPositionForSite(active?.id || active?.pattern));
     });
   }
 
@@ -244,12 +246,13 @@ export class PositionStudio {
     this.siteErrorEl.hidden = true;
   }
 
-  isCustomized(pos) {
-    const p = normalizePosition(pos);
+  isCustomized(pos, idOrPattern = '__default__') {
+    const baseline = getDefaultPositionForSite(idOrPattern);
+    const p = normalizePosition(pos, baseline);
     return (
-      p.anchor !== DEFAULT_POSITION.anchor ||
-      p.offsetX !== DEFAULT_POSITION.offsetX ||
-      p.offsetY !== DEFAULT_POSITION.offsetY
+      p.anchor !== baseline.anchor ||
+      p.offsetX !== baseline.offsetX ||
+      p.offsetY !== baseline.offsetY
     );
   }
 
@@ -286,7 +289,7 @@ export class PositionStudio {
       if (item.id === this.selectedKey) {
         btn.classList.add('active');
       }
-      if (this.isCustomized(item.pos)) {
+      if (this.isCustomized(item.pos, item.isDefault ? '__default__' : item.id || item.pattern)) {
         btn.classList.add('customized');
       }
       btn.dataset.siteKey = item.id;

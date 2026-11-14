@@ -4,6 +4,7 @@ import {
   createDefaultSitePositions,
   ensureBuiltinPlatformPresets,
   findMatchingSitePosition,
+  getDefaultPositionForSite,
   normalizePosition,
   normalizeSitePatternInput,
   normalizeSitePositionEntry,
@@ -269,7 +270,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   resetPosBtn?.addEventListener('click', () => {
-    commitPositionUpdate(() => ({ ...DEFAULT_POSITION }));
+    const scopeId = selectedScopeKey === '__current_host__' ? detectedHostname : selectedScopeKey;
+    commitPositionUpdate(() => getDefaultPositionForSite(scopeId));
   });
 
   document.getElementById('toggle-overlay').addEventListener('click', () => {

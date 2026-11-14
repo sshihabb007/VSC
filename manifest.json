@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Video Speed Controller",
   "short_name": "SpeedCtrl",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Accelerate, slow down, advance, rewind, and bookmark any HTML5 video or audio with lightweight precision.",
   "author": "Mehedi Hasan Shihab",
   "homepage_url": "https://sshihabb007.github.io/",

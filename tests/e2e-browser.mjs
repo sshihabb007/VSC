@@ -424,8 +424,13 @@ async function runBrowserSuite(browserSpec, baseUrl) {
     ]);
     assert.equal(await optionsPage.locator('#controllerCSS').count(), 0, 'Custom CSS textarea should be removed');
 
-    // Switch to Advanced tab -> verify platform positioning pills & invalid site rule fail-closed
+    // Switch to Advanced tab -> verify default Appearance/Positioning & invalid site rule fail-closed
     await optionsPage.click('#tab-advanced');
+    assert.equal(await optionsPage.inputValue('#controllerOpacity'), '0.3');
+    assert.equal(await optionsPage.inputValue('#controllerButtonSize'), '8');
+    assert.equal(await optionsPage.inputValue('#logLevel'), '3');
+    assert.match(await optionsPage.locator('#pos-readout').textContent(), /Top Left · X: 0px · Y: \+50px/);
+
     const platformPills = await optionsPage.locator('#pos-platform-tabs .pos-site-pill').allTextContents();
     assert.ok(platformPills.some((t) => t.includes('Global Default')), 'Expected Global Default tab');
     assert.ok(platformPills.some((t) => t.includes('YouTube')), 'Expected YouTube tab');
@@ -442,16 +447,19 @@ async function runBrowserSuite(browserSpec, baseUrl) {
     await optionsPage.fill('#site-rules-container .rulePattern >> nth=0', 'imgur.com');
     await optionsPage.fill('#controllerOpacity', '0.55');
 
-    // Configure YouTube -> Top-Right + Left (10px) + Down (10px), verify hotspot active sync too
+    // Configure YouTube (starts at 0, +50) -> Top-Right + Left (10px) + Down (10px) => (-10, 60)
     await optionsPage.click('#pos-platform-tabs [data-site-key="youtube"]');
+    assert.match(await optionsPage.locator('#pos-readout').textContent(), /Top Left · X: 0px · Y: \+50px/);
     await optionsPage.click('.pos-hotspot[data-anchor="top-right"]');
     assert.equal(await optionsPage.locator('.pos-anchor-btn[data-anchor="top-right"].active').count(), 1);
     await optionsPage.click('.pos-nudge-btn[data-nudge="left"]');
     await optionsPage.click('.pos-nudge-btn[data-nudge="down"]');
 
-    // Configure Facebook -> Bottom-Left (independent from YouTube)
+    // Configure Facebook (starts at 0, +60) -> Bottom-Left + zero offsets (independent from YouTube)
     await optionsPage.click('#pos-platform-tabs [data-site-key="facebook"]');
+    assert.match(await optionsPage.locator('#pos-readout').textContent(), /Top Left · X: 0px · Y: \+60px/);
     await optionsPage.click('.pos-anchor-btn[data-anchor="bottom-left"]');
+    await optionsPage.click('#pos-reset-offsets');
 
     // Add site-wise override for active fixture host (127.0.0.1) -> Bottom-Right + Up 20px + Left 10px
     await optionsPage.fill('#pos-site-pattern', '127.0.0.1');
@@ -477,7 +485,7 @@ async function runBrowserSuite(browserSpec, baseUrl) {
     const fbRule = savedSettings.sitePositions.find((s) => s.id === 'facebook');
     assert.deepEqual(
       { anchor: ytRule.anchor, offsetX: ytRule.offsetX, offsetY: ytRule.offsetY },
-      { anchor: 'top-right', offsetX: -10, offsetY: 10 }
+      { anchor: 'top-right', offsetX: -10, offsetY: 60 }
     );
     assert.deepEqual(
       { anchor: fbRule.anchor, offsetX: fbRule.offsetX, offsetY: fbRule.offsetY },
@@ -591,7 +599,7 @@ async function runBrowserSuite(browserSpec, baseUrl) {
 
     await popupPage.selectOption('#pos-scope-select', 'youtube');
     const ytPopupReadout = await popupPage.locator('#popup-pos-readout').textContent();
-    assert.match(ytPopupReadout, /Top Right · -10,10px/);
+    assert.match(ytPopupReadout, /Top Right · -10,60px/);
 
     const localSiteVal = await popupPage.evaluate(() => {
       const opt = Array.from(document.querySelectorAll('#pos-scope-select option')).find((o) =>
