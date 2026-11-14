@@ -121,7 +121,7 @@ export class ActionHandler {
         }
         break;
       default:
-        logger.warn(`Unknown action: ${action}`);
+        logger.debug(`Unknown action: ${action}`);
         break;
     }
   }

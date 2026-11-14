@@ -2,6 +2,15 @@
 
 All notable changes to **Video Speed Controller** are documented in this file.
 
+## [1.0.1] - 2026-11-14
+
+### Fixed
+- **Chrome Extensions Manager Warning on Facebook (`[VSC] Facebook DOM structure changed, using fallback positioning`)**: Replaced the brittle unconditional 7-level `parentElement` climb in `FacebookHandler.getControllerPosition()` with bounded player-container resolution that prefers explicit Facebook player roots (`[data-video-id]`, `.video-container`, `.fbStoryVideoContainer`), stops before `<body>`/`<html>`, semantic feed/article/dialog boundaries (`role="feed"`, `role="article"`, `role="main"`, `role="dialog"`), and oversized feed columns (`getBoundingClientRect()`), and logs shallow/detached fallbacks at `debug` level instead of `console.warn`.
+- **Expanded Facebook Domain Coverage**: Updated `FacebookHandler.matches()` to match `facebook.com`, `*.facebook.com` (`www`, `m`, `web`), and `fb.watch` consistently with built-in platform positioning presets.
+- **Root DOM Boundary Protection Across All Site Handlers**: Added `BaseSiteHandler.getSafeParentNode()` and hardened `VideoController.insertIntoDOM()` plus `YouTubeHandler`, `NetflixHandler`, `AmazonHandler`, `AppleHandler`, `DailymotionHandler`, and `FrameHandler` so `<vsc-controller>` never climbs onto `<html>`/`#document` or inserts outside `<body>` while preserving `ShadowRoot` container support.
+- **Extension Reload & Runtime Error Hardening**: Handled asynchronous `Extension context invalidated` Promise rejections on `chrome.storage.sync.set()`/`get()` in `content-bridge.js`, added `.catch()` and `chrome.runtime.lastError` guards across `popup.js`, and demoted non-fatal fail-closed/action diagnostics in `storage-manager.js` and `action-handler.js` to `debug`.
+- **Regression & Browser E2E Coverage**: Added unit boundary tests for `FacebookHandler`, sibling site handlers, and `VideoController.insertIntoDOM`, and tightened Chromium/Brave E2E assertions to fail on any `[VSC]` `console.warn` output.
+
 ## [1.0.0] - 2026-11-13
 
 ### Added

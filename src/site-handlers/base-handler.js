@@ -9,6 +9,20 @@ export class BaseSiteHandler {
     return false;
   }
 
+  /**
+   * Returns a safe parent container without escaping `<body>`, `<html>`, or `#document`.
+   */
+  getSafeParentNode(node, { allowBody = false, allowShadowRoot = false } = {}) {
+    const next = allowShadowRoot ? node?.parentNode : node?.parentElement;
+    if (!next) return null;
+    if (allowShadowRoot && next.nodeType === 11) return next;
+    if (next.nodeType !== 1) return null;
+    const tag = next.tagName;
+    if (tag === 'HTML') return null;
+    if (!allowBody && tag === 'BODY') return null;
+    return next;
+  }
+
   getControllerPosition(parent, _video) {
     return {
       insertionPoint: parent,

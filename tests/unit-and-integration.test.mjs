@@ -3,12 +3,14 @@ import assert from 'node:assert/strict';
 
 import {
   DEFAULT_SETTINGS,
+  LOG_LEVELS,
   SPEED_LIMITS,
   clampSpeed,
   roundSpeed,
   formatSpeed,
   displayKeyFromCode,
 } from '../src/utils/constants.js';
+import { logger } from '../src/utils/logger.js';
 import { compileSitePattern, validateSitePattern, matchSiteRule } from '../src/utils/site-pattern.js';
 import { isBlacklisted } from '../src/utils/blacklist.js';
 import { DEFAULT_CONTROLLER_CSS, preprocessDomainCSS } from '../src/styles/controller-css-defaults.js';
@@ -35,6 +37,16 @@ import { stateManager } from '../src/core/state-manager.js';
 import { ShadowDOMManager } from '../src/ui/shadow-dom.js';
 import { DragHandler } from '../src/ui/drag-handler.js';
 import { VideoMutationObserver } from '../src/observers/mutation-observer.js';
+import { VideoController } from '../src/core/video-controller.js';
+import { siteHandlerManager } from '../src/site-handlers/index.js';
+import { FacebookHandler } from '../src/site-handlers/facebook-handler.js';
+import { YouTubeHandler } from '../src/site-handlers/youtube-handler.js';
+import { NetflixHandler } from '../src/site-handlers/netflix-handler.js';
+import { AmazonHandler } from '../src/site-handlers/amazon-handler.js';
+import { AppleHandler } from '../src/site-handlers/apple-handler.js';
+import { DailymotionHandler } from '../src/site-handlers/dailymotion-handler.js';
+import { FrameHandler } from '../src/site-handlers/frame-handler.js';
+import { extractChangelogSection } from '../scripts/generate-release-notes.mjs';
 
 function createMockClassList() {
   const set = new Set();
@@ -744,4 +756,192 @@ test('resolveSitePosition isolates per-platform rules and nudges safely', () => 
 
   assert.equal(normalizeSitePatternInput('https://www.Vimeo.com/12345'), 'vimeo.com');
   assert.equal(normalizeSitePatternInput('/\\.edu$/i'), '/\\.edu$/i');
+});
+
+test('FacebookHandler resolves bounded player containers without console.warn or escaping <body>', () => {
+  assert.equal(FacebookHandler.matches('www.facebook.com'), true);
+  assert.equal(FacebookHandler.matches('facebook.com'), true);
+  assert.equal(FacebookHandler.matches('m.facebook.com'), true);
+  assert.equal(FacebookHandler.matches('web.facebook.com'), true);
+  assert.equal(FacebookHandler.matches('fb.watch'), true);
+  assert.equal(FacebookHandler.matches('notfacebook.com'), false);
+
+  const origWarn = console.warn;
+  const origError = console.error;
+  const warnings = [];
+  console.warn = (...args) => warnings.push(args.join(' '));
+  console.error = (...args) => warnings.push(args.join(' '));
+  logger.setVerbosity(LOG_LEVELS.WARNING);
+
+  try {
+    const fb = new FacebookHandler();
+
+    // 1. Shallow DOM (< 7 levels): html > body > playerWrap > video -> zero warnings, stays on playerWrap
+    const html = createMockElement('html');
+    const body = createMockElement('body');
+    const shallowWrap = createMockElement('div');
+    const shallowVideo = createMockElement('video');
+    html.appendChild(body);
+    body.appendChild(shallowWrap);
+    shallowWrap.appendChild(shallowVideo);
+
+    const shallowPos = fb.getControllerPosition(shallowWrap, shallowVideo);
+    assert.equal(shallowPos.insertionPoint, shallowWrap);
+    assert.equal(warnings.length, 0);
+
+    // 2. Deep Comet DOM: html > body > feed[role=feed] > article[role=article] > card > wrap > surface > parent > video
+    const feed = createMockElement('div');
+    feed.setAttribute('role', 'feed');
+    const article = createMockElement('div');
+    article.setAttribute('role', 'article');
+    const card = createMockElement('div');
+    const wrap = createMockElement('div');
+    const surface = createMockElement('div');
+    const innerParent = createMockElement('div');
+    const deepVideo = createMockElement('video');
+    body.appendChild(feed);
+    feed.appendChild(article);
+    article.appendChild(card);
+    card.appendChild(wrap);
+    wrap.appendChild(surface);
+    surface.appendChild(innerParent);
+    innerParent.appendChild(deepVideo);
+
+    const deepPos = fb.getControllerPosition(innerParent, deepVideo);
+    assert.equal(deepPos.insertionPoint, card);
+    assert.notEqual(deepPos.insertionPoint, article);
+    assert.notEqual(deepPos.insertionPoint, html);
+    assert.notEqual(deepPos.insertionPoint, body);
+
+    // 3. Oversized feed column bounding rect stops before ballooning wrapper
+    const oversizedCol = createMockElement('div');
+    oversizedCol.getBoundingClientRect = () => ({ left: 0, top: 0, width: 680, height: 3200 });
+    const boundedPlayer = createMockElement('div');
+    boundedPlayer.getBoundingClientRect = () => ({ left: 0, top: 0, width: 640, height: 360 });
+    const mediaBox = createMockElement('div');
+    mediaBox.getBoundingClientRect = () => ({ left: 0, top: 0, width: 640, height: 360 });
+    const sizedVideo = createMockElement('video');
+    sizedVideo.getBoundingClientRect = () => ({ left: 0, top: 0, width: 640, height: 360 });
+    body.appendChild(oversizedCol);
+    oversizedCol.appendChild(boundedPlayer);
+    boundedPlayer.appendChild(mediaBox);
+    mediaBox.appendChild(sizedVideo);
+
+    const sizedPos = fb.getControllerPosition(mediaBox, sizedVideo);
+    assert.equal(sizedPos.insertionPoint, boundedPlayer);
+
+    // 4. Detached subtree (parentElement === null) -> returns direct parent cleanly with zero warnings
+    const detachedParent = createMockElement('div');
+    const detachedVideo = createMockElement('video');
+    detachedParent.appendChild(detachedVideo);
+    const detachedPos = fb.getControllerPosition(detachedParent, detachedVideo);
+    assert.equal(detachedPos.insertionPoint, detachedParent);
+    assert.equal(warnings.length, 0);
+  } finally {
+    console.warn = origWarn;
+    console.error = origError;
+  }
+});
+
+test('Sibling site handlers and VideoController.insertIntoDOM never escape <body> or <html>', () => {
+  const docNode = { nodeType: 9, tagName: undefined };
+  const html = createMockElement('html');
+  html.parentNode = docNode;
+  const body = createMockElement('body');
+  docNode.documentElement = html;
+  docNode.body = body;
+  html.appendChild(body);
+
+  const directWrap = createMockElement('div');
+  const video = createMockElement('video');
+  body.appendChild(directWrap);
+  directWrap.appendChild(video);
+
+  for (const Handler of [YouTubeHandler, NetflixHandler, AmazonHandler, AppleHandler, DailymotionHandler]) {
+    const h = new Handler();
+    const fromDirect = h.getControllerPosition(directWrap, video);
+    assert.equal(fromDirect.insertionPoint, directWrap, `${Handler.name} should stay on directWrap under body`);
+
+    const fromBody = h.getControllerPosition(body, video);
+    assert.equal(fromBody.insertionPoint, body, `${Handler.name} should not climb from body to html`);
+  }
+
+  // AppleHandler still climbs to ShadowRoot (nodeType 11) when video is wrapped inside shadow DOM
+  const host = createMockElement('apple-tv-plus-player');
+  const shadow = host.attachShadow({ mode: 'open' });
+  const shadowInner = createMockElement('div');
+  shadow.appendChild(shadowInner);
+  shadowInner.parentNode = shadow;
+  shadowInner.parentElement = null;
+  const appleShadowPos = new AppleHandler().getControllerPosition(shadowInner, video);
+  assert.equal(appleShadowPos.insertionPoint, shadow);
+
+  // FrameHandler stops before body/html even if html/body has overflow: hidden
+  const origGetComputedStyle = globalThis.getComputedStyle;
+  globalThis.getComputedStyle = () => ({ overflow: 'hidden', overflowX: 'hidden', overflowY: 'hidden' });
+  try {
+    html.getBoundingClientRect = () => ({ left: 0, top: 0, width: 1280, height: 720 });
+    body.getBoundingClientRect = () => ({ left: 0, top: 0, width: 1280, height: 720 });
+    video.getBoundingClientRect = () => ({ left: 0, top: 0, width: 640, height: 360 });
+    const framePos = new FrameHandler().getControllerPosition(body, video);
+    assert.equal(framePos.insertionPoint, body);
+  } finally {
+    globalThis.getComputedStyle = origGetComputedStyle;
+  }
+
+  // VideoController.insertIntoDOM clamps html/#document anchors and beforeParent on body safely inside <body>
+  const inserted = [];
+  body.firstChild = directWrap;
+  body.insertBefore = (frag, ref) => {
+    inserted.push({ container: 'BODY', ref });
+    return frag;
+  };
+  html.insertBefore = () => {
+    throw new Error('Must never insert into <html>');
+  };
+  docNode.createDocumentFragment = () => ({ appendChild: () => {} });
+
+  const origGetPos = siteHandlerManager.getControllerPosition;
+  try {
+    siteHandlerManager.getControllerPosition = () => ({
+      insertionPoint: html,
+      insertionMethod: 'firstChild',
+      targetParent: html,
+    });
+    VideoController.prototype.insertIntoDOM.call({ parent: body, video }, docNode, createMockElement('vsc-controller'));
+
+    siteHandlerManager.getControllerPosition = () => ({
+      insertionPoint: body,
+      insertionMethod: 'beforeParent',
+      targetParent: body,
+    });
+    VideoController.prototype.insertIntoDOM.call({ parent: body, video }, docNode, createMockElement('vsc-controller'));
+
+    assert.equal(inserted.length, 2);
+    assert.equal(inserted[0].container, 'BODY');
+    assert.equal(inserted[1].container, 'BODY');
+  } finally {
+    siteHandlerManager.getControllerPosition = origGetPos;
+  }
+});
+
+test('extractChangelogSection isolates version-specific release notes cleanly', () => {
+  const sample = [
+    '# Changelog',
+    '',
+    '## [1.0.1] - 2026-11-14',
+    '',
+    '### Fixed',
+    '- Bug A',
+    '- Bug B',
+    '',
+    '## [1.0.0] - 2026-11-13',
+    '',
+    '### Added',
+    '- Initial release',
+  ].join('\r\n');
+
+  assert.equal(extractChangelogSection(sample, '1.0.1'), '### Fixed\n- Bug A\n- Bug B');
+  assert.equal(extractChangelogSection(sample, '1.0.0'), '### Added\n- Initial release');
+  assert.equal(extractChangelogSection(sample, '9.9.9'), '');
 });

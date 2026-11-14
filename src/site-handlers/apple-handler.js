@@ -6,7 +6,7 @@ export class AppleHandler extends BaseSiteHandler {
   }
 
   getControllerPosition(parent, _video) {
-    const targetParent = parent?.parentNode || parent;
+    const targetParent = this.getSafeParentNode(parent, { allowShadowRoot: true }) || parent;
     return {
       insertionPoint: targetParent,
       insertionMethod: 'firstChild',

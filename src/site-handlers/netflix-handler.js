@@ -7,7 +7,7 @@ export class NetflixHandler extends BaseSiteHandler {
   }
 
   getControllerPosition(parent, _video) {
-    const parentEl = parent?.parentElement || parent;
+    const parentEl = this.getSafeParentNode(parent) || parent;
     return {
       insertionPoint: parentEl,
       insertionMethod: 'beforeParent',

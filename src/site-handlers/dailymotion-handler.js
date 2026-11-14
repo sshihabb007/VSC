@@ -6,7 +6,7 @@ export class DailymotionHandler extends BaseSiteHandler {
   }
 
   getControllerPosition(parent, _video) {
-    const playerContainer = parent?.parentElement || parent;
+    const playerContainer = this.getSafeParentNode(parent) || parent;
     return {
       insertionPoint: playerContainer,
       insertionMethod: 'firstChild',

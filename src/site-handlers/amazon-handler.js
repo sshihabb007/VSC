@@ -12,7 +12,7 @@ export class AmazonHandler extends BaseSiteHandler {
 
   getControllerPosition(parent, video) {
     if (!video.classList.contains('vjs-tech')) {
-      const parentEl = parent?.parentElement || parent;
+      const parentEl = this.getSafeParentNode(parent) || parent;
       return {
         insertionPoint: parentEl,
         insertionMethod: 'beforeParent',

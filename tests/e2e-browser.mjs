@@ -203,6 +203,8 @@ async function runBrowserSuite(browserSpec, baseUrl) {
     page.on('console', (msg) => {
       if (msg.type() === 'error') {
         errors.push(`console.error: ${msg.text()}`);
+      } else if (msg.type() === 'warning' && msg.text().includes('[VSC]')) {
+        errors.push(`console.warn: ${msg.text()}`);
       }
     });
 

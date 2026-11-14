@@ -45,10 +45,10 @@ jobs:
           if [ ! -f "$ASSET" ]; then
             ASSET="$(ls release/VideoSpeedController-v*.zip | head -n 1)"
           fi
-          NOTES="Lightweight Manifest V3 HTML5 <video> and <audio> speed controller for Google Chrome and Brave Browser.\n\n### Highlights\n- Per-platform & site-wise Controller Positioning Studio (no Custom CSS required)\n- Shadow DOM isolation with constructable CSSStyleSheet & GPU translate3d drag\n- Updated default shortcuts: X (-0.1x), C (+0.1x), S (-5s), D (+5s), Z (1.0x), G (1.6x), V (hide), M/J (mark/jump)\n\n### Quick Install\n1. Download \`$(basename "$ASSET")\` below and extract it.\n2. Open \`chrome://extensions\` or \`brave://extensions\`.\n3. Enable **Developer mode**, click **Load unpacked**, and select the extracted folder."
+          node scripts/generate-release-notes.mjs "$TAG" "$ASSET" /tmp/release-notes.md
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "$ASSET" --clobber
+            gh release edit "$TAG" --title "Video Speed Controller $TAG" --notes-file /tmp/release-notes.md
           else
-            printf '%b\n' "$NOTES" > /tmp/release-notes.md
             gh release create "$TAG" "$ASSET" --title "Video Speed Controller $TAG" --notes-file /tmp/release-notes.md
           fi

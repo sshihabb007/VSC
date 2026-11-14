@@ -46,7 +46,7 @@ Engineered for minimal runtime overhead, Shadow DOM isolation, SPA navigation re
 
 ### Option 1: Download Pre-Built Release *(Recommended)*
 
-1. Download **`VideoSpeedController-v1.0.0.zip`** from the [**Latest GitHub Release**](https://github.com/sshihabb007/VSC/releases/latest).
+1. Download **`VideoSpeedController-v1.0.1.zip`** from the [**Latest GitHub Release**](https://github.com/sshihabb007/VSC/releases/latest).
 2. Extract the archive into a local folder on your computer.
 3. Open your browser's extensions page:
    - **Google Chrome:** `chrome://extensions`

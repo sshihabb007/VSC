@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let storageLoaded = false;
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    void chrome.runtime.lastError;
     activeTabId = tabs?.[0]?.id ?? null;
     queryActiveTabState();
   });
@@ -68,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dispatch(activeTabId);
     } else {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        void chrome.runtime.lastError;
         activeTabId = tabs?.[0]?.id ?? null;
         dispatch(activeTabId);
       });
@@ -222,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    chrome.storage.sync.set({ defaultPosition, sitePositions });
+    chrome.storage.sync.set({ defaultPosition, sitePositions }).catch(() => {});
     renderPositionUI();
   }
 
@@ -277,6 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
   disableBtn.addEventListener('click', () => {
     const nextEnabled = disableBtn.classList.contains('disabled');
     chrome.storage.sync.set({ enabled: nextEnabled }, () => {
+      void chrome.runtime.lastError;
       toggleEnabledUI(nextEnabled);
       setStatusMessage(`${nextEnabled ? 'Enabled' : 'Disabled'}. Reload page.`);
     });
@@ -290,6 +293,8 @@ document.addEventListener('DOMContentLoaded', () => {
       sitePositions: null,
     },
     (storage) => {
+      void chrome.runtime.lastError;
+      if (!storage) return;
       toggleEnabledUI(storage.enabled !== false);
 
       let slowerStep = DEFAULT_BINDINGS.slower.value;

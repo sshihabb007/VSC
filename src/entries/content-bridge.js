@@ -7,6 +7,10 @@ const SPEED_MAX = 16;
 const docEl = document.documentElement;
 let bridgeInitialized = false;
 
+function isContextInvalidated(error) {
+  return Boolean(error?.message?.includes('Extension context invalidated'));
+}
+
 function dispatchAbort() {
   docEl.dispatchEvent(new CustomEvent('VSC_SETTINGS_READY', { detail: { abort: true } }));
 }
@@ -26,7 +30,9 @@ function init() {
     let bridgeActive = false;
 
     const settingsReady = chrome.storage.sync.get(null).catch((error) => {
-      console.error('[VSC] Initial settings load failed:', error);
+      if (!isContextInvalidated(error)) {
+        console.error('[VSC] Initial settings load failed:', error);
+      }
       return null;
     });
 
@@ -122,20 +128,28 @@ function init() {
         if ('lastSpeed' in data) {
           const speed = data.lastSpeed;
           if (typeof speed === 'number' && Number.isFinite(speed)) {
-            chrome.storage.sync.set({
-              lastSpeed: Math.min(Math.max(speed, SPEED_MIN), SPEED_MAX),
-            });
+            chrome.storage.sync
+              .set({
+                lastSpeed: Math.min(Math.max(speed, SPEED_MIN), SPEED_MAX),
+              })
+              .catch((err) => {
+                if (isContextInvalidated(err)) {
+                  docEl.removeEventListener('VSC_WRITE_STORAGE', handleWriteStorage);
+                }
+              });
           }
         }
       } catch (err) {
-        if (err.message?.includes('Extension context invalidated')) {
+        if (isContextInvalidated(err)) {
           docEl.removeEventListener('VSC_WRITE_STORAGE', handleWriteStorage);
         }
       }
     };
     docEl.addEventListener('VSC_WRITE_STORAGE', handleWriteStorage);
   } catch (error) {
-    console.error('[VSC] Bridge init failed:', error);
+    if (!isContextInvalidated(error)) {
+      console.error('[VSC] Bridge init failed:', error);
+    }
   }
 }
 

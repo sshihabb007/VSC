@@ -23,6 +23,9 @@ export class FrameHandler extends BaseSiteHandler {
     let candidate = parent;
 
     for (let depth = 0; candidate && depth < 8; depth += 1) {
+      if (candidate.nodeType !== 1 || candidate.tagName === 'BODY' || candidate.tagName === 'HTML') {
+        break;
+      }
       const rect = candidate.getBoundingClientRect();
       const style = getComputedStyle(candidate);
       const clipsContent =

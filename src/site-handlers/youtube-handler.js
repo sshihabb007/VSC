@@ -12,7 +12,7 @@ export class YouTubeHandler extends BaseSiteHandler {
   }
 
   getControllerPosition(parent, _video) {
-    let targetParent = parent?.parentElement || parent;
+    let targetParent = this.getSafeParentNode(parent) || parent;
 
     // 2026 YouTube /embed/ layout places fixed #player-controls directly under <body>.
     if (
@@ -28,8 +28,9 @@ export class YouTubeHandler extends BaseSiteHandler {
     }
 
     // Older embed layout has #player-controls sibling under grandparent #player.
-    if (targetParent?.parentElement?.querySelector('#player-controls')) {
-      targetParent = targetParent.parentElement;
+    const grandParent = this.getSafeParentNode(targetParent, { allowBody: true });
+    if (grandParent?.querySelector?.('#player-controls')) {
+      targetParent = grandParent;
     }
 
     return {

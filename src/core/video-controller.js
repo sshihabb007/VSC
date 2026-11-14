@@ -111,18 +111,28 @@ export class VideoController {
     frag.appendChild(wrapper);
 
     const pos = siteHandlerManager.getControllerPosition(this.parent, this.video);
-    const anchor = pos?.insertionPoint || this.parent;
+    let anchor = pos?.insertionPoint || this.parent;
     if (!anchor) return;
+
+    if (anchor === doc || anchor.nodeType === 9 || anchor.tagName === 'HTML') {
+      anchor = doc.body || this.parent;
+      if (!anchor || anchor === doc || anchor.nodeType === 9 || anchor.tagName === 'HTML') {
+        return;
+      }
+    }
+
+    const canInsertAroundAnchor =
+      anchor.parentElement && anchor.parentElement.tagName !== 'HTML' && anchor.tagName !== 'BODY';
 
     switch (pos.insertionMethod) {
       case 'beforeParent':
-        if (anchor.parentElement) {
+        if (canInsertAroundAnchor) {
           anchor.parentElement.insertBefore(frag, anchor);
           return;
         }
         break;
       case 'afterParent':
-        if (anchor.parentElement) {
+        if (canInsertAroundAnchor) {
           anchor.parentElement.insertBefore(frag, anchor.nextSibling);
           return;
         }

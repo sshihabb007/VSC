@@ -25,7 +25,7 @@ export class StorageManager {
         if (settled) return;
         settled = true;
         docEl.removeEventListener('VSC_SETTINGS_READY', onReady);
-        logger.warn('Timed out waiting for VSC_SETTINGS_READY; aborting fail-closed');
+        logger.debug('Timed out waiting for VSC_SETTINGS_READY; aborting fail-closed');
         resolve(null);
       }, SETTINGS_TIMEOUT_MS);
 
